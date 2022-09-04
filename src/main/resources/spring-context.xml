@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="questionDao" class="org.example.homework01.dao.QuestionDaoImpl">
+        <constructor-arg name="fileName" value="/qna.csv"/>
+    </bean>
+
+    <bean name="printService" class="org.example.homework01.service.PrintServiceImpl"/>
+
+    <bean name="parser" class="org.example.homework01.service.TestRunnerImpl">
+        <constructor-arg name="questionDao" ref="questionDao"/>
+        <constructor-arg name="printService" ref="printService"/>
+    </bean>
+
+</beans>
