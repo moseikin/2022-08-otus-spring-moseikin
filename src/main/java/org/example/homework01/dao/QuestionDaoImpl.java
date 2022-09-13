@@ -5,9 +5,10 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
-import lombok.RequiredArgsConstructor;
 import org.example.homework01.domain.AnswerVariant;
 import org.example.homework01.domain.QuestionWithAnswer;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@RequiredArgsConstructor
+@Repository
 public class QuestionDaoImpl implements QuestionDao {
 
     private static final char SPLIT_BY_SYMBOL = ';';
@@ -24,7 +25,12 @@ public class QuestionDaoImpl implements QuestionDao {
     private static final String FILE_READING_ERROR = "Error reading file";
     private static final String FILE_PARSING_ERROR = "Error parsing file";
 
+
     private final String fileName;
+
+    public QuestionDaoImpl(@Value("${test-file}") String fileName) {
+        this.fileName = fileName;
+    }
 
     public List<QuestionWithAnswer> getQuestionsAndAnswers() {
         List<QuestionWithAnswer> questionWithAnswers = new ArrayList<>();

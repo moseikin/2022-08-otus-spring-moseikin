@@ -1,0 +1,11 @@
+test-file: /qna.csv
+respondent: Respondent:\u0020
+question: The question is:\u0020
+choose-correct: Choose correct:\u0020
+correct: Correct
+incorrect: Incorrect
+correct-answers-number: Correct answers number:\u0020
+total-questions: Total questions:\u0020
+test-is-passed: Test is passed
+test-not-passed: Test not passed
+min-correct: 3
