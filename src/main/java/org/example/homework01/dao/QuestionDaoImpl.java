@@ -5,6 +5,7 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
+import lombok.extern.java.Log;
 import org.example.homework01.domain.AnswerVariant;
 import org.example.homework01.domain.QuestionWithAnswer;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Repository
+@Log
 public class QuestionDaoImpl implements QuestionDao {
 
     private static final char SPLIT_BY_SYMBOL = ';';
@@ -25,11 +27,10 @@ public class QuestionDaoImpl implements QuestionDao {
     private static final String FILE_READING_ERROR = "Error reading file";
     private static final String FILE_PARSING_ERROR = "Error parsing file";
 
+    private final String testFile;
 
-    private final String fileName;
-
-    public QuestionDaoImpl(@Value("${test-file}") String fileName) {
-        this.fileName = fileName;
+    public QuestionDaoImpl(@Value("${test-file}") String testFile) {
+        this.testFile = testFile;
     }
 
     public List<QuestionWithAnswer> getQuestionsAndAnswers() {
@@ -51,7 +52,7 @@ public class QuestionDaoImpl implements QuestionDao {
 
     private List<String[]> extractLinesFromFile() {
 
-        try (InputStream is = getClass().getResourceAsStream(fileName)) {
+        try (InputStream is = getClass().getResourceAsStream(testFile)) {
             if (is != null) {
                 CSVParser csvParser = new CSVParserBuilder().withSeparator(SPLIT_BY_SYMBOL).build();
                 CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(is))
@@ -62,9 +63,9 @@ public class QuestionDaoImpl implements QuestionDao {
                 return csvReader.readAll();
             }
         } catch (IOException e) {
-            System.out.println(FILE_READING_ERROR);
+            log.info(FILE_READING_ERROR);
         } catch (CsvException e) {
-            System.out.println(FILE_PARSING_ERROR);
+            log.info(FILE_PARSING_ERROR);
         }
 
         return new ArrayList<>();

@@ -33,7 +33,7 @@ class PrintServiceImplTest {
 
     @Test
     void printQuestionAndAnswers_Should_PrintNothing() {
-        questionDao = new QuestionDaoImpl("/wrongName.csv");
+        questionDao = new QuestionDaoImpl("/wrong.file");
         List<QuestionWithAnswer> questionWithAnswers = questionDao.getQuestionsAndAnswers();
         printService.print(questionWithAnswers.toString());
 

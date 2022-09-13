@@ -1,34 +1,13 @@
 package org.example.homework01.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Respondent {
 
-    /**
-     * Respondent first name
-     */
     private final String firstName;
 
-    /**
-     * Respondent last name
-     */
     private final String lastName;
-
-    /**
-     * Correct answers count
-     */
-    private final Integer correctAnswersCount;
-
-    /**
-     * Total questions count
-     */
-    private final Integer questionsTotal;
-
-    /**
-     * Is test was passed
-     */
-    private final Boolean isTestPassed;
 }
