@@ -9,5 +9,5 @@ public class AnswerVariant {
 
     private final String text;
 
-    private final Boolean isCorrect;
+    private final boolean isCorrect;
 }

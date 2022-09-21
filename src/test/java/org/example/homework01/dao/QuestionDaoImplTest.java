@@ -12,7 +12,6 @@ class QuestionDaoImplTest {
 
     private QuestionDaoImpl questionDao;
 
-
     @Test
     void getQuestionsAndAnswers() {
         questionDao = new QuestionDaoImpl("/qna.csv");
@@ -24,7 +23,7 @@ class QuestionDaoImplTest {
 
     @Test
     void getQuestionsAndAnswers_Should_ReturnEmptyList() {
-        questionDao = new QuestionDaoImpl("/wrongName.csv");
+        questionDao = new QuestionDaoImpl("/wrong.file");
 
         List<QuestionWithAnswer> questionWithAnswers = questionDao.getQuestionsAndAnswers();
 
