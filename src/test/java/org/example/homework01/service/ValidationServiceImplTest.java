@@ -37,8 +37,6 @@ class ValidationServiceImplTest {
 
     @Test
     void isInTheBounds_Should_ReturnFalse() {
-        assertFalse(validationServiceImpl.isInTheBounds(3, null));
-
         assertFalse(validationServiceImpl.isInTheBounds(3, 3));
 
         assertFalse(validationServiceImpl.isInTheBounds(3, -3));

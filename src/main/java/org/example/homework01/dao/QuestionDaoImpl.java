@@ -5,7 +5,8 @@ import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+import org.example.homework01.component.LocaleProvider;
 import org.example.homework01.domain.AnswerVariant;
 import org.example.homework01.domain.QuestionWithAnswer;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,20 +18,25 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
-@Log
+@Slf4j
 public class QuestionDaoImpl implements QuestionDao {
 
     private static final char SPLIT_BY_SYMBOL = ';';
     private static final String SPLIT_ANSWERS_BY_SYMBOL = ",";
+
     private static final String FILE_READING_ERROR = "Error reading file";
     private static final String FILE_PARSING_ERROR = "Error parsing file";
 
     private final String testFile;
+    private final LocaleProvider localeProvider;
 
-    public QuestionDaoImpl(@Value("${test-file}") String testFile) {
+    public QuestionDaoImpl(@Value("${settings.test-file}") String testFile,
+                           LocaleProvider localeProvider) {
         this.testFile = testFile;
+        this.localeProvider = localeProvider;
     }
 
     public List<QuestionWithAnswer> getQuestionsAndAnswers() {
@@ -39,9 +45,9 @@ public class QuestionDaoImpl implements QuestionDao {
         List<String[]> lines = extractLinesFromFile();
 
         for (String[] line : lines) {
-            String questionText = line[0];
+            String questionText = line[1];
 
-            String[] answerVariantsArray = Arrays.copyOfRange(line, 1, line.length);
+            String[] answerVariantsArray = Arrays.copyOfRange(line, 2, line.length);
             List<AnswerVariant> answerVariants = extractAnswerVariants(answerVariantsArray);
 
             questionWithAnswers.add(new QuestionWithAnswer(questionText, answerVariants));
@@ -60,15 +66,24 @@ public class QuestionDaoImpl implements QuestionDao {
                         .withCSVParser(csvParser)
                         .build();
 
-                return csvReader.readAll();
+                List<String[]> lines = csvReader.readAll();
+
+                return extractLinesForCurrentLocale(lines);
             }
         } catch (IOException e) {
-            log.info(FILE_READING_ERROR);
+            log.error(FILE_READING_ERROR);
         } catch (CsvException e) {
-            log.info(FILE_PARSING_ERROR);
+            log.error(FILE_PARSING_ERROR);
         }
 
         return new ArrayList<>();
+    }
+
+    private List<String[]> extractLinesForCurrentLocale(List<String[]> lines) {
+
+        return lines.stream()
+                .filter(line -> line[0].equals(localeProvider.getLocale().getLanguage()))
+                .collect(Collectors.toList());
     }
 
     private List<AnswerVariant> extractAnswerVariants(String[] answerVariantsArray) {
