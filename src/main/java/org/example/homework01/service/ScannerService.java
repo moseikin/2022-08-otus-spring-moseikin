@@ -4,5 +4,5 @@ public interface ScannerService {
 
     String nextLine();
 
-    Integer nextInt();
+    int nextInt();
 }

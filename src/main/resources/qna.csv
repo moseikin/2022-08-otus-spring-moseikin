@@ -1,6 +1,11 @@
 Question;Right answer;Variants
-Which song has the most views (of all time) on YouTube?;Despacito;Despacito,Lady in red,Rasputin
-Which American state is the largest (by area)?;Alaska;California,Texas,Alaska
-What part of the atom has no electric charge?;Neutron;Proton,Cell,Neutron
-Which planet has the most gravity?;Jupiter;Jupiter,Saturn,Pluto
-Which country invented tea?;China;India,Japan,China
+en;Which song has the most views (of all time) on YouTube?;Despacito;Despacito,Lady in red,Rasputin
+en;Which American state is the largest (by area)?;Alaska;California,Texas,Alaska
+en;What part of the atom has no electric charge?;Neutron;Proton,Cell,Neutron
+en;Which planet has the most gravity?;Jupiter;Jupiter,Saturn,Pluto
+en;Which country invented tea?;China;India,Japan,China
+ru_ru;Песня с наибольшим количеством просмотров на YouTube;Медленно;Медленно,Женщина в красном,Распутин
+ru_ru;Крупнейший по площади штат США;Аляска;Калифорния,Техас,Аляска
+ru_ru;Какая часть атома не имеет электрического заряда?;Нейтрон;Протон,Клетка,Нейтрон
+ru_ru;Какая планета имеет наибольшую гравитацию?;Юпитер;Юпитер,Сатурн,Плутон
+ru_ru;Какая страна первой стала использовать чай?;Китай;Индия,Япония,Китай

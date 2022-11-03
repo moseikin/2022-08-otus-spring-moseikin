@@ -11,8 +11,8 @@ public class ValidationServiceImpl implements ValidationService {
         return name != null && !name.matches(ANY_DIGIT_REGEX) && !name.isEmpty();
     }
 
-    public boolean isInTheBounds(int size, Integer value) {
+    public boolean isInTheBounds(int size, int value) {
 
-        return value != null && value >= 0 && value < size;
+        return value >= 0 && value < size;
     }
 }

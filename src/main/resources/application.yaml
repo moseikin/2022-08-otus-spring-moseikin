@@ -1,0 +1,8 @@
+spring:
+  messages:
+    basename: "i18n/appmessages"
+    encoding: UTF-8
+settings:
+  test-file: /qna.csv
+  min-correct: 3
+  language: ru_RU

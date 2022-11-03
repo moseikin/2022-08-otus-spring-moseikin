@@ -4,5 +4,5 @@ public interface ValidationService {
 
     boolean isNameValid(String name);
 
-    boolean isInTheBounds(int size, Integer value);
+    boolean isInTheBounds(int size, int value);
 }

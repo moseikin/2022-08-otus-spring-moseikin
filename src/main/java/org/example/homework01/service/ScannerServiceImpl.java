@@ -1,26 +1,32 @@
 package org.example.homework01.service;
 
-import org.springframework.stereotype.Service;
-
+import java.io.InputStream;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
-@Service
 public class ScannerServiceImpl implements ScannerService {
 
-    public String nextLine() {
-        return new Scanner(System.in).nextLine();
+    private final Scanner scanner;
+
+    public ScannerServiceImpl(InputStream is) {
+        this.scanner = new Scanner(is);
     }
 
-    public Integer nextInt() {
+    public String nextLine() {
+        return scanner.nextLine();
+    }
+
+    public int nextInt() {
         int number;
 
         try {
-            number = new Scanner(System.in).nextInt();
-        } catch (InputMismatchException e) {
-            return null;
-        }
+            number = scanner.nextInt();
 
-        return number;
+            return number;
+        } catch (InputMismatchException e) {
+            scanner.next();
+
+            return -1;
+        }
     }
 }
