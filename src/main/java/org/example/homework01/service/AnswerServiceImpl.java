@@ -14,8 +14,6 @@ public class AnswerServiceImpl implements AnswerService {
     private static final String CODE_INCORRECT = "incorrect";
     private static final String CODE_YOUR_ANSWER_IS = "your.answer.is";
 
-    private final String lineSeparator = System.lineSeparator();
-
     private final ScannerService scannerService;
     private final PrintService printService;
     private final ValidationService validationService;
@@ -37,11 +35,11 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         if (answerVariants.get(answerNumber).isCorrect()) {
-            printService.print(localizationMessageService.getMessage(CODE_CORRECT) + lineSeparator);
+            printService.println(localizationMessageService.getMessage(CODE_CORRECT));
 
             return 1;
         } else {
-            printService.print(localizationMessageService.getMessage(CODE_INCORRECT) + lineSeparator);
+            printService.println(localizationMessageService.getMessage(CODE_INCORRECT));
 
             return 0;
         }
