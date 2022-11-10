@@ -21,7 +21,8 @@ checkstyle {
     configFile file("/checkstyle.xml")
 }
 
-def mostExcluded = ['.*/**', 'gradle*', 'build/**', '*.iml', '*.log', '**/*.jar', '*.gradle', '*.xml', '*/*.gradle', '**/gradle/wrapper/*']
+def mostExcluded = ['.*/**', 'gradle*', 'build/**', '*.iml', '*.log', '**/*.log','**/*.jar', '*.gradle', '*.xml',
+                    '*/*.gradle', '**/gradle/wrapper/*', '*/build/**']
 
 checkstyleMain {
     source = fileTree('.') {
