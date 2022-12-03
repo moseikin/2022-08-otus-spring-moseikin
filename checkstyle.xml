@@ -64,6 +64,7 @@ page at http://checkstyle.sourceforge.net/config.html -->
 
     <module name="JavadocStyle">
       <property name="severity" value="warning"/>
+      <property name="checkFirstSentence" value="false"/>
     </module>
 
     <!--
@@ -158,7 +159,7 @@ page at http://checkstyle.sourceforge.net/config.html -->
 
     <module name="LineLength">
       <!-- Checks if a line is too long. -->
-      <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="120"/>
+      <property name="max" value="${com.puppycrawl.tools.checkstyle.checks.sizes.LineLength.max}" default="130"/>
       <property name="severity" value="error"/>
 
       <!--

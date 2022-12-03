@@ -7,3 +7,5 @@
 ##Задание 3. Тест на Spring Boot с локализацией вопросов и сообщений hw-03-spring-boot-localized
 
 ##Задание 4. Тест с подключенным Spring Shell hw-04-spring-shell
+
+##Задание 5. Библиотека с книгами Spring Shell hw-05-jdbc-library

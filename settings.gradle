@@ -1,3 +1,4 @@
 rootProject.name = 'home-work-01'
 include '1-testing'
+include '2-library'
 
