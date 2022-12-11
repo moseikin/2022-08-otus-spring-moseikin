@@ -1,4 +1,4 @@
-package org.example.library.dto;
+package org.example.library.dto.request;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

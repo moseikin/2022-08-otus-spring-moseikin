@@ -1,4 +1,4 @@
-package org.example.library.dto;
+package org.example.library.dto.response;
 
 import lombok.Getter;
 

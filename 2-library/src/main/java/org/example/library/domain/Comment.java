@@ -15,31 +15,29 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedAttributeNode;
 import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedSubgraph;
 import javax.persistence.Table;
 
 @Getter
-@Entity
-@Table(name = "books")
 @RequiredArgsConstructor
 @NoArgsConstructor(force = true)
-@NamedEntityGraph(name = "author-genre-graph",
-        attributeNodes = {@NamedAttributeNode("author"),
-                @NamedAttributeNode("genre")})
-public class Book {
+@Entity
+@Table(name = "comments")
+@NamedEntityGraph(name = "comment-book-graph", attributeNodes = @NamedAttributeNode(value = "book", subgraph = "author-genre-graph"),
+        subgraphs = {@NamedSubgraph(name = "author-genre-graph",
+                attributeNodes = {@NamedAttributeNode("author"),
+                        @NamedAttributeNode("genre")})})
+public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "book_id")
-    private final Long id;
-
-    @Column(name = "book_name", length = 100)
-    private final String bookName;
+    @Column(name = "comment_id")
+    private final Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "author_id", referencedColumnName = "author_id")
-    private final Author author;
+    @JoinColumn(name = "book_id", referencedColumnName = "book_id")
+    private final Book book;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
-    @JoinColumn(name = "genre_id", referencedColumnName = "genre_id")
-    private final Genre genre;
+    @Column(name = "content")
+    private final String content;
 }

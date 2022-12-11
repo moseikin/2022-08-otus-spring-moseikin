@@ -1,8 +1,8 @@
-package org.example.library.dao;
+package org.example.library.repository;
 
 import org.example.library.domain.Genre;
 
-public interface GenreDao {
+public interface GenreRepository {
 
     Genre getGenreById(long id);
 }

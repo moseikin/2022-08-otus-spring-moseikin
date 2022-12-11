@@ -1,14 +1,15 @@
 package org.example.library.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.library.dao.BookDao;
 import org.example.library.domain.Author;
 import org.example.library.domain.Book;
 import org.example.library.domain.Genre;
-import org.example.library.dto.BookRequestDto;
-import org.example.library.dto.BookResponseDto;
+import org.example.library.dto.request.BookRequestDto;
+import org.example.library.dto.response.BookResponseDto;
 import org.example.library.mapper.BookMapper;
+import org.example.library.repository.BookRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,57 +18,73 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
 
-    private final BookDao bookDao;
+    private static final String NEW_BOOK_WITH_ID = "Новая книга не должна иметь идентификатор";
+    private static final String UPDATE_BOOK_WITHOUT_ID = "Нет идентификатора для обновляемой книги";
+
+    private final BookRepository bookRepository;
     private final AuthorService authorService;
     private final GenreService genreService;
     private final BookMapper bookMapper;
 
     @Override
-    public Long createBook(BookRequestDto bookRequestDto) {
+    @Transactional
+    public BookResponseDto createBook(BookRequestDto bookRequestDto) {
 
-        Author author = authorService.getAuthorById(bookRequestDto.getAuthorId());
-
-        Genre genre = genreService.getGenreById(bookRequestDto.getGenreId());
-
-        Book book = new Book(null, bookRequestDto.getBookName(), author, genre);
-
-        return bookDao.insert(book);
-    }
-
-    @Override
-    public BookResponseDto getBook(long id) {
-        Book book = bookDao.getById(id);
-
-        return bookMapper.toBookDto(book);
-    }
-
-    @Override
-    public Long updateBook(BookRequestDto bookRequestDto) {
-
-        boolean isBookExists = bookDao.isBookExists(bookRequestDto.getBookId());
-
-        if (isBookExists) {
+        if (bookRequestDto.getBookId() == null) {
             Author author = authorService.getAuthorById(bookRequestDto.getAuthorId());
 
             Genre genre = genreService.getGenreById(bookRequestDto.getGenreId());
 
-            return bookDao.updateBook(new Book(bookRequestDto.getBookId(), bookRequestDto.getBookName(), author, genre));
+            Book book = new Book(null, bookRequestDto.getBookName(), author, genre);
+
+            Book book1 = bookRepository.insert(book);
+
+            return bookMapper.toResponseDto(book1);
         } else {
 
-            return null;
+            throw new IllegalStateException(NEW_BOOK_WITH_ID);
         }
     }
 
     @Override
-    public void deleteBookById(long id) {
+    @Transactional(readOnly = true)
+    public BookResponseDto getBook(long id) {
+        Book book = bookRepository.getById(id);
 
-        bookDao.deleteById(id);
+        return bookMapper.toResponseDto(book);
     }
 
     @Override
-    public List<BookResponseDto> getAllBooks() {
-        List<Book> books = bookDao.getAll();
+    @Transactional
+    public BookResponseDto updateBook(BookRequestDto bookRequestDto) {
 
-        return books.stream().map(bookMapper::toBookDto).collect(Collectors.toList());
+        if (bookRequestDto.getBookId() == null) {
+
+            throw new IllegalStateException(UPDATE_BOOK_WITHOUT_ID);
+        } else {
+            Author author = authorService.getAuthorById(bookRequestDto.getAuthorId());
+
+            Genre genre = genreService.getGenreById(bookRequestDto.getGenreId());
+
+            Book book = bookRepository.updateBook(new Book(bookRequestDto.getBookId(), bookRequestDto.getBookName(),
+                    author, genre));
+
+            return bookMapper.toResponseDto(book);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteBook(long id) {
+
+        bookRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BookResponseDto> getAllBooks() {
+        List<Book> books = bookRepository.getAll();
+
+        return books.stream().map(bookMapper::toResponseDto).collect(Collectors.toList());
     }
 }
