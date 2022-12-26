@@ -18,3 +18,10 @@ create table if not exists books
     author_id bigint references authors (author_id),
     genre_id  bigint references genres (genre_id)
 );
+
+create table if not exists comments
+(
+    comment_id bigserial primary key,
+    book_id    bigserial references books (book_id) on delete cascade,
+    content    varchar(10000)
+);

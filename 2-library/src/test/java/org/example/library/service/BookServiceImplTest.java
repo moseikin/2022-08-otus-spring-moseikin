@@ -1,123 +1,168 @@
 package org.example.library.service;
 
-import org.example.library.dao.BookDaoJdbc;
 import org.example.library.domain.Author;
 import org.example.library.domain.Book;
 import org.example.library.domain.Genre;
-import org.example.library.dto.BookRequestDto;
-import org.example.library.dto.BookResponseDto;
+import org.example.library.dto.request.BookRequestDto;
+import org.example.library.dto.response.BookResponseDto;
+import org.example.library.mapper.BookMapper;
+import org.example.library.repository.BookRepositoryJpa;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 
 @SpringBootTest
 class BookServiceImplTest {
 
-    private static final long BOOK_ID = 1L;
+    private static final String BOOK_NAME = "test book name";
 
     @Autowired
     private BookServiceImpl bookService;
+
     @MockBean
-    private BookDaoJdbc bookDaoJdbc;
+    private BookRepositoryJpa bookRepositoryJpa;
+    @MockBean
+    private AuthorServiceImpl authorService;
+    @MockBean
+    private GenreServiceImpl genreService;
+    @MockBean
+    private BookMapper bookMapper;
 
     @Test
     void createBook() {
-        BookRequestDto bookRequestDto = new BookRequestDto(null, "TEST", 1L, 1L);
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
 
-        doReturn(BOOK_ID).when(bookDaoJdbc).insert(any());
+        BookResponseDto expectedDto = new BookResponseDto(1L, BOOK_NAME,
+                author.getName(), author.getSurname(), genre.getName());
+        Book savedBook = new Book(1L, BOOK_NAME, author, genre);
 
-        long bookId = bookService.createBook(bookRequestDto);
+        doReturn(author).when(authorService).getAuthorById(author.getId());
+        doReturn(genre).when(genreService).getGenreById(genre.getId());
+        doReturn(savedBook).when(bookRepositoryJpa).insert(any());
+        doReturn(expectedDto).when(bookMapper).toResponseDto(savedBook);
 
-        assertEquals(BOOK_ID, bookId);
+        BookRequestDto bookRequestDto = new BookRequestDto(null, BOOK_NAME, author.getId(), genre.getId());
+        BookResponseDto actualDto = bookService.createBook(bookRequestDto);
+
+        assertThat(actualDto).usingRecursiveComparison().isEqualTo(expectedDto);
+    }
+
+    @Test
+    void createBook_ShouldThrowIllegalStateException() {
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
+
+        BookRequestDto bookRequestDto = new BookRequestDto(1L, BOOK_NAME, author.getId(), genre.getId());
+
+        assertThrows(IllegalStateException.class, () -> bookService.createBook(bookRequestDto));
     }
 
     @Test
     void getBook() {
-        Book book = createFirstTestBook();
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
 
-        doReturn(book).when(bookDaoJdbc).getById(BOOK_ID);
+        BookResponseDto expectedDto = new BookResponseDto(1L, BOOK_NAME,
+                author.getName(), author.getSurname(), genre.getName());
 
-        BookResponseDto bookResponseDto = bookService.getBook(BOOK_ID);
+        Book savedBook = new Book(1L, BOOK_NAME, author, genre);
 
-        assertNotNull(bookResponseDto);
-    }
+        doReturn(expectedDto).when(bookMapper).toResponseDto(savedBook);
 
-    @Test
-    void getBook_ShouldThrowEmptyResultDataAccessException() {
-        doThrow(EmptyResultDataAccessException.class).when(bookDaoJdbc).getById(BOOK_ID);
-
-        assertThrows(EmptyResultDataAccessException.class, () -> bookService.getBook(BOOK_ID));
+        bookService.getBook(1L);
     }
 
     @Test
     void updateBook() {
-        Book updatedBook = createFirstTestBook();
-        updatedBook.setId(BOOK_ID);
-        updatedBook.setBookName("another name");
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
 
-        doReturn(true).when(bookDaoJdbc).isBookExists(BOOK_ID);
-        doReturn(BOOK_ID).when(bookDaoJdbc).updateBook(any());
+        BookResponseDto expectedDto = new BookResponseDto(1L, BOOK_NAME,
+                author.getName(), author.getSurname(), genre.getName());
 
-        BookRequestDto updatedBookRequestDto = new BookRequestDto(BOOK_ID, "another name", 1, 1);
+        Book book = new Book(1L, BOOK_NAME, author, genre);
 
-        Long updatedBookId = bookService.updateBook(updatedBookRequestDto);
+        doReturn(author).when(authorService).getAuthorById(author.getId());
+        doReturn(genre).when(genreService).getGenreById(genre.getId());
+        doReturn(book).when(bookRepositoryJpa).updateBook(any());
+        doReturn(expectedDto).when(bookMapper).toResponseDto(book);
 
-        assertEquals(BOOK_ID, updatedBookId);
+        BookRequestDto bookRequestDto = new BookRequestDto(1L, BOOK_NAME, author.getId(), genre.getId());
+        BookResponseDto actualDto = bookService.updateBook(bookRequestDto);
+
+        assertThat(actualDto).usingRecursiveComparison().isEqualTo(expectedDto);
+    }
+
+    @Test
+    void updateBook_ShouldThrowIllegalStateException() {
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
+
+        BookRequestDto bookRequestDto = new BookRequestDto(null, BOOK_NAME, author.getId(), genre.getId());
+
+        assertThrows(IllegalStateException.class, () -> bookService.updateBook(bookRequestDto));
     }
 
     @Test
     void getAllBooks() {
-        List<Book> books = createTestBooksList();
+        Author author1 = getExpectedAuthor1();
+        Genre genre1 = getExpectedGenre1();
+        Author author2 = getExpectedAuthor2();
+        Genre genre2 = getExpectedGenre2();
 
-        List<BookResponseDto> expectedBookResponseDtos = createBookResponseDtoList();
+        String secondBookName = "other book";
 
-        Mockito.when(bookDaoJdbc.getAll())
-                .thenReturn(books);
+        BookResponseDto expectedDto1 = new BookResponseDto(1L, BOOK_NAME, author1.getName(),
+                author1.getSurname(), genre1.getName());
+        BookResponseDto expectedDto2 = new BookResponseDto(2L, secondBookName, author2.getName(),
+                author2.getSurname(), genre2.getName());
 
-        List<BookResponseDto> actualBookResponseDtos = bookService.getAllBooks();
+        List<BookResponseDto> expectedDtos = Arrays.asList(expectedDto1, expectedDto2);
 
-        assertThat(actualBookResponseDtos).usingRecursiveComparison().ignoringFields("id").isEqualTo(expectedBookResponseDtos);
+        Book book1 = new Book(1L, BOOK_NAME, author1, genre1);
+        Book book2 = new Book(2L, secondBookName, author2, genre2);
+        List<Book> books = Arrays.asList(book1, book2);
+
+        doReturn(author1).when(authorService).getAuthorById(author1.getId());
+        doReturn(genre1).when(genreService).getGenreById(genre1.getId());
+        doReturn(author2).when(authorService).getAuthorById(author2.getId());
+        doReturn(genre2).when(genreService).getGenreById(genre2.getId());
+        doReturn(books).when(bookRepositoryJpa).getAll();
+        doReturn(expectedDto1).when(bookMapper).toResponseDto(book1);
+        doReturn(expectedDto2).when(bookMapper).toResponseDto(book2);
+
+        List<BookResponseDto> actualDtos = bookService.getAllBooks();
+
+        assertThat(actualDtos).usingRecursiveComparison().isEqualTo(expectedDtos);
     }
 
-    private List<Book> createTestBooksList() {
-        return Arrays.asList(createFirstTestBook(), createSecondTestBook());
+    private Author getExpectedAuthor1() {
+
+        return new Author(1L, "author surname 1", "author name 1");
     }
 
-    private Book createFirstTestBook() {
-        Author author = new Author(1L, "Gaiman", "Neil");
-        Genre genre = new Genre(1L, "Fantasy");
+    private Genre getExpectedGenre1() {
 
-        return new Book(null, "TEST", author, genre);
+        return new Genre(1L, "test genre 1");
     }
 
-    private Book createSecondTestBook() {
-        Author author = new Author(1L, "Gaiman", "Neil");
-        Genre genre = new Genre(1L, "Fantasy");
+    private Author getExpectedAuthor2() {
 
-        return new Book(null, "another book name", author, genre);
+        return new Author(2L, "author surname 2", "author name 2");
     }
 
-    private List<BookResponseDto> createBookResponseDtoList() {
-        return Arrays.asList(createFirstDto(), createSecondDto());
-    }
+    private Genre getExpectedGenre2() {
 
-    private BookResponseDto createFirstDto() {
-        return new BookResponseDto(1L, "TEST", "Neil", "Gaiman", "Fantasy");
-    }
-
-    private BookResponseDto createSecondDto() {
-        return new BookResponseDto(2L, "another book name", "Neil", "Gaiman", "Fantasy");
+        return new Genre(2L, "test genre 2");
     }
 }
