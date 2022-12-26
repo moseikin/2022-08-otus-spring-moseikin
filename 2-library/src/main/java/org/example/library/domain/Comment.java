@@ -13,9 +13,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedAttributeNode;
-import javax.persistence.NamedEntityGraph;
-import javax.persistence.NamedSubgraph;
 import javax.persistence.Table;
 
 @Getter
@@ -23,16 +20,12 @@ import javax.persistence.Table;
 @NoArgsConstructor(force = true)
 @Entity
 @Table(name = "comments")
-@NamedEntityGraph(name = "comment-book-graph", attributeNodes = @NamedAttributeNode(value = "book", subgraph = "author-genre-graph"),
-        subgraphs = {@NamedSubgraph(name = "author-genre-graph",
-                attributeNodes = {@NamedAttributeNode("author"),
-                        @NamedAttributeNode("genre")})})
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private final Long commentId;
+    private final Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "book_id", referencedColumnName = "book_id")

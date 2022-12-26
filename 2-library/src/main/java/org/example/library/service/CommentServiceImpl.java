@@ -11,6 +11,7 @@ import org.example.library.repository.CommentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,8 +19,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private static final String NEW_COMMENT_WITH_ID = "Новый комментарий не должен иметь идентификатор";
-    private static final String UPDATE_COMMENT_WITHOUT_ID = "Нет идентификатора для обновляемого комментария";
+    private static final String NEW_COMMENT_WITH_ID = "The new comment must not have an ID";
+    private static final String UPDATE_COMMENT_WITHOUT_ID = "No id for comment being updated";
 
     private final BookRepository bookRepository;
     private final CommentRepository commentRepository;
@@ -32,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
 
         if (commentRequestDto.getCommentId() == null) {
 
-            commentRepository.createComment(comment);
+            commentRepository.save(comment);
 
             return commentMapper.toResponseDto(comment);
         } else {
@@ -45,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentResponseDto getComment(long id) {
-        Comment comment = commentRepository.getById(id);
+        Comment comment = commentRepository.findById(id).orElseThrow(EntityNotFoundException::new);
 
         return commentMapper.toResponseDto(comment);
     }
@@ -59,14 +60,14 @@ public class CommentServiceImpl implements CommentService {
         } else {
             Comment comment = createCommentEntity(commentRequestDto);
 
-            comment = commentRepository.updateComment(comment);
+            comment = commentRepository.save(comment);
 
             return commentMapper.toResponseDto(comment);
         }
     }
 
     private Comment createCommentEntity(CommentRequestDto commentRequestDto) {
-        Book book = bookRepository.getById(commentRequestDto.getBookId());
+        Book book = bookRepository.findById(commentRequestDto.getBookId()).orElseThrow(EntityNotFoundException::new);
 
         return new Comment(commentRequestDto.getCommentId(), book, commentRequestDto.getContent());
     }

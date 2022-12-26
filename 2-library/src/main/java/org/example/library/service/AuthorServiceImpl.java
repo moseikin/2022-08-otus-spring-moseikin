@@ -6,6 +6,8 @@ import org.example.library.repository.AuthorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 @RequiredArgsConstructor
 public class AuthorServiceImpl implements AuthorService {
@@ -15,6 +17,6 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     @Transactional(readOnly = true)
     public Author getAuthorById(long id) {
-        return authorRepository.getAuthorById(id);
+        return authorRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
 }

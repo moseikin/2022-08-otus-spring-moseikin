@@ -4,16 +4,16 @@ import org.example.library.domain.Genre;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(GenreRepositoryJpa.class)
-class GenreRepositoryJpaTest {
+class GenreRepositoryTest {
 
     @Autowired
-    private GenreRepositoryJpa genreRepositoryJpa;
+    private GenreRepository genreRepository;
 
     @Test
     void getGenreById() {
@@ -21,8 +21,17 @@ class GenreRepositoryJpaTest {
 
         Genre expectedGenre = new Genre(genreId, "test genre 1");
 
-        Genre actualGenre = genreRepositoryJpa.getGenreById(genreId);
+        Genre actualGenre = genreRepository.findById(genreId).orElse(new Genre());
 
         assertThat(actualGenre).usingRecursiveComparison().isEqualTo(expectedGenre);
+    }
+
+    @Test
+    void getGenreById_ShouldReturnEmptyOptional() {
+        long genreId = Long.MAX_VALUE;
+
+        Optional<Genre> actualGenreOptional = genreRepository.findById(genreId);
+
+        assertThat(actualGenreOptional).isEmpty();
     }
 }

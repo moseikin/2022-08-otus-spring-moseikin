@@ -11,3 +11,5 @@
 ## Задание 5. Библиотека с книгами Spring Shell, JDBC hw-05-jdbc-library
 
 ## Задание 6. Библиотека с книгами и комментариями Spring Shell, ORM hw-06-spring-orm-jpa
+
+## Задание 7. Библиотека переписана на Spring Data

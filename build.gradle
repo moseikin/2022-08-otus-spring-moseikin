@@ -22,7 +22,7 @@ checkstyle {
 }
 
 def mostExcluded = ['.*/**', 'gradle*', 'build/**', '*.iml', '*.log', '**/*.log','**/*.jar', '*.gradle', '*.xml',
-                    '*/*.gradle', '**/gradle/wrapper/*', '*/build/**']
+                    '*/*.gradle', '**/gradle/wrapper/*', '*/build/**', '*/out/**', '**/generated/**']
 
 checkstyleMain {
     source = fileTree('.') {

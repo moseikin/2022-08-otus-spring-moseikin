@@ -6,7 +6,7 @@ import org.example.library.domain.Genre;
 import org.example.library.dto.request.BookRequestDto;
 import org.example.library.dto.response.BookResponseDto;
 import org.example.library.mapper.BookMapper;
-import org.example.library.repository.BookRepositoryJpa;
+import org.example.library.repository.BookRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,7 +30,7 @@ class BookServiceImplTest {
     private BookServiceImpl bookService;
 
     @MockBean
-    private BookRepositoryJpa bookRepositoryJpa;
+    private BookRepository bookRepository;
     @MockBean
     private AuthorServiceImpl authorService;
     @MockBean
@@ -48,7 +49,7 @@ class BookServiceImplTest {
 
         doReturn(author).when(authorService).getAuthorById(author.getId());
         doReturn(genre).when(genreService).getGenreById(genre.getId());
-        doReturn(savedBook).when(bookRepositoryJpa).insert(any());
+        doReturn(savedBook).when(bookRepository).save(any());
         doReturn(expectedDto).when(bookMapper).toResponseDto(savedBook);
 
         BookRequestDto bookRequestDto = new BookRequestDto(null, BOOK_NAME, author.getId(), genre.getId());
@@ -78,8 +79,9 @@ class BookServiceImplTest {
         Book savedBook = new Book(1L, BOOK_NAME, author, genre);
 
         doReturn(expectedDto).when(bookMapper).toResponseDto(savedBook);
+        doReturn(Optional.of(savedBook)).when(bookRepository).findById(savedBook.getId());
 
-        bookService.getBook(1L);
+        assertThat(bookService.getBook(1L)).usingRecursiveComparison().isEqualTo(expectedDto);
     }
 
     @Test
@@ -94,7 +96,7 @@ class BookServiceImplTest {
 
         doReturn(author).when(authorService).getAuthorById(author.getId());
         doReturn(genre).when(genreService).getGenreById(genre.getId());
-        doReturn(book).when(bookRepositoryJpa).updateBook(any());
+        doReturn(book).when(bookRepository).save(any());
         doReturn(expectedDto).when(bookMapper).toResponseDto(book);
 
         BookRequestDto bookRequestDto = new BookRequestDto(1L, BOOK_NAME, author.getId(), genre.getId());
@@ -137,7 +139,7 @@ class BookServiceImplTest {
         doReturn(genre1).when(genreService).getGenreById(genre1.getId());
         doReturn(author2).when(authorService).getAuthorById(author2.getId());
         doReturn(genre2).when(genreService).getGenreById(genre2.getId());
-        doReturn(books).when(bookRepositoryJpa).getAll();
+        doReturn(books).when(bookRepository).findAll();
         doReturn(expectedDto1).when(bookMapper).toResponseDto(book1);
         doReturn(expectedDto2).when(bookMapper).toResponseDto(book2);
 
