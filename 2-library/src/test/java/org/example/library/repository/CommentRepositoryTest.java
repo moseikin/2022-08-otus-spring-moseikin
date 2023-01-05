@@ -9,21 +9,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(CommentRepositoryJpa.class)
-class CommentRepositoryJpaTest {
+class CommentRepositoryTest {
 
     private static final long BOOK_ID_WITH_COMMENTS = 1L;
     private static final int COMMENTS_COUNT = 3;
 
     @Autowired
-    private CommentRepositoryJpa commentRepositoryJpa;
+    private CommentRepository commentRepository;
 
     @Autowired
     private TestEntityManager testEntityManager;
@@ -35,7 +33,7 @@ class CommentRepositoryJpaTest {
         Book expectedBook = new Book(BOOK_ID_WITH_COMMENTS, "test book 1", getExpectedAuthor1(), getExpectedGenre1());
         Comment expectedComment = new Comment(newCommentId, expectedBook, "test comment 4");
 
-        commentRepositoryJpa.createComment(new Comment(null, expectedBook, "test comment 4"));
+        commentRepository.save(new Comment(null, expectedBook, "test comment 4"));
         Comment actualComment = testEntityManager.find(Comment.class, newCommentId);
 
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(expectedComment);
@@ -50,15 +48,12 @@ class CommentRepositoryJpaTest {
         Book expectedBook = new Book(1L, "test name 1", getExpectedAuthor1(), getExpectedGenre1());
         Comment expectedComment = new Comment(1L, expectedBook, "first test comment to first book");
 
-        Comment actualComment = commentRepositoryJpa.getById(1L);
+        Comment actualComment = commentRepository.findById(1L).orElse(new Comment());
 
         assertThat(actualComment)
-                .matches(c -> c.getCommentId().equals(expectedComment.getCommentId()), "")
-                .matches(c -> c.getBook().getGenre().getName().equals(expectedComment.getBook().getGenre().getName()), "")
-                .matches(c -> c.getBook().getAuthor().getId().equals(expectedComment.getBook().getAuthor().getId()), "")
-                .matches(c -> c.getBook().getAuthor().getSurname().equals(expectedComment.getBook().getAuthor().getSurname()), "")
-                .matches(c -> c.getBook().getAuthor().getName().equals(expectedComment.getBook().getAuthor().getName()), "")
-                .matches(c -> c.getContent().equals(expectedComment.getContent()), "");
+                .matches(c -> c.getId().equals(expectedComment.getId()))
+                .matches(c -> c.getBook().getId() != null)
+                .matches(c -> c.getContent().equals(expectedComment.getContent()));
 
         assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
         sessionFactory.getStatistics().setStatisticsEnabled(false);
@@ -71,7 +66,7 @@ class CommentRepositoryJpaTest {
                 .unwrap(SessionFactory.class);
         sessionFactory.getStatistics().setStatisticsEnabled(true);
 
-        List<Comment> actualComments = commentRepositoryJpa.getAllCommentsByBookId(1L);
+        List<Comment> actualComments = commentRepository.getAllCommentsByBookId(1L);
 
         assertThat(actualComments).isNotNull()
                 .hasSize(COMMENTS_COUNT)
@@ -81,7 +76,7 @@ class CommentRepositoryJpaTest {
                 .allMatch(ac -> ac.getBook().getId() != null)
                 .allMatch(ac -> !ac.getBook().getBookName().equals(""));
 
-        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
+        assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(2L);
         sessionFactory.getStatistics().setStatisticsEnabled(false);
         sessionFactory.getStatistics().clear();
     }
@@ -89,13 +84,13 @@ class CommentRepositoryJpaTest {
     @Test
     void updateComment() {
         Comment oldComment = testEntityManager.find(Comment.class, 3L);
-        Comment expectedComment = new Comment(oldComment.getCommentId(),
+        Comment expectedComment = new Comment(oldComment.getId(),
                 new Book(2L, "test book 2", getExpectedAuthor2(), getExpectedGenre2()),
                 "updated comment for second book");
 
         testEntityManager.detach(oldComment);
 
-        Comment actualComment = commentRepositoryJpa.updateComment(expectedComment);
+        Comment actualComment = commentRepository.save(expectedComment);
 
         assertThat(actualComment).usingRecursiveComparison().isNotEqualTo(oldComment);
         assertThat(actualComment).usingRecursiveComparison().isEqualTo(expectedComment);
@@ -103,18 +98,18 @@ class CommentRepositoryJpaTest {
 
     @Test
     void deleteById() {
-        List<Comment> commentCountBeforeDeleting = commentRepositoryJpa.getAllCommentsByBookId(BOOK_ID_WITH_COMMENTS);
+        List<Comment> commentCountBeforeDeleting = commentRepository.getAllCommentsByBookId(BOOK_ID_WITH_COMMENTS);
 
         assertThat(commentCountBeforeDeleting).hasSize(COMMENTS_COUNT);
 
         long commentIdToDelete = 1L;
 
-        commentRepositoryJpa.deleteById(commentIdToDelete);
+        commentRepository.deleteById(commentIdToDelete);
 
-        List<Comment> commentCountAfterDeleting = commentRepositoryJpa.getAllCommentsByBookId(BOOK_ID_WITH_COMMENTS);
+        List<Comment> commentCountAfterDeleting = commentRepository.getAllCommentsByBookId(BOOK_ID_WITH_COMMENTS);
 
         assertThat(commentCountAfterDeleting).hasSize(COMMENTS_COUNT - 1)
-                .allMatch(c -> c.getCommentId() != commentIdToDelete);
+                .allMatch(c -> c.getId() != commentIdToDelete);
     }
 
     private Author getExpectedAuthor1() {

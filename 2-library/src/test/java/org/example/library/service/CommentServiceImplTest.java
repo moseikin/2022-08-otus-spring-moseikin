@@ -7,7 +7,7 @@ import org.example.library.domain.Genre;
 import org.example.library.dto.request.CommentRequestDto;
 import org.example.library.dto.response.CommentResponseDto;
 import org.example.library.mapper.CommentMapper;
-import org.example.library.repository.BookRepositoryJpa;
+import org.example.library.repository.BookRepository;
 import org.example.library.repository.CommentRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,7 +38,7 @@ class CommentServiceImplTest {
     @MockBean
     private CommentRepository commentRepository;
     @MockBean
-    private BookRepositoryJpa bookRepositoryJpa;
+    private BookRepository bookRepository;
 
     @Test
     void createComment() {
@@ -51,7 +52,7 @@ class CommentServiceImplTest {
         Book book = new Book(BOOK_ID, "test book", author, genre);
 
         doReturn(expectedDto).when(commentMapper).toResponseDto(any());
-        doReturn(book).when(bookRepositoryJpa).getById(BOOK_ID);
+        doReturn(Optional.of(book)).when(bookRepository).findById(BOOK_ID);
 
         CommentResponseDto actualComment = commentService.createComment(commentRequestDto);
 
@@ -61,6 +62,11 @@ class CommentServiceImplTest {
     @Test
     void createComment_ShouldThrowIllegalStateException() {
         CommentRequestDto commentRequestDto = new CommentRequestDto(1L, BOOK_ID, CONTENT);
+
+        Author author = getExpectedAuthor1();
+        Genre genre = getExpectedGenre1();
+        Book book = new Book(BOOK_ID, "test book", author, genre);
+        doReturn(Optional.of(book)).when(bookRepository).findById(BOOK_ID);
 
         assertThrows(IllegalStateException.class, () -> commentService.createComment(commentRequestDto));
     }
@@ -76,7 +82,7 @@ class CommentServiceImplTest {
         Comment savedComment = new Comment(COMMENT_ID, book, CONTENT);
 
         doReturn(expectedDto).when(commentMapper).toResponseDto(savedComment);
-        doReturn(savedComment).when(commentRepository).getById(COMMENT_ID);
+        doReturn(Optional.of(savedComment)).when(commentRepository).findById(COMMENT_ID);
 
         CommentResponseDto actualDto = commentService.getComment(COMMENT_ID);
 
@@ -96,8 +102,8 @@ class CommentServiceImplTest {
         Comment updatedComment = new Comment(COMMENT_ID, book, CONTENT);
 
         doReturn(expectedDto).when(commentMapper).toResponseDto(updatedComment);
-        doReturn(book).when(bookRepositoryJpa).getById(BOOK_ID);
-        doReturn(updatedComment).when(commentRepository).updateComment(any());
+        doReturn(Optional.of(book)).when(bookRepository).findById(BOOK_ID);
+        doReturn(updatedComment).when(commentRepository).save(any());
 
         CommentResponseDto actualDto = commentService.updateComment(commentRequestDto);
 

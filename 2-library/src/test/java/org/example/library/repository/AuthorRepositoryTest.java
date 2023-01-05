@@ -4,27 +4,34 @@ import org.example.library.domain.Author;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(AuthorRepositoryJpa.class)
-class AuthorRepositoryJpaTest {
+class AuthorRepositoryTest {
 
     @Autowired
-    private AuthorRepositoryJpa authorRepositoryJpa;
+    private AuthorRepository authorRepository;
 
     @Test
-    @Transactional(readOnly = true)
     void getAuthorById() {
         long authorId = 1L;
 
         Author expectedAuthor = new Author(authorId, "author surname 1", "author name 1");
 
-        Author actualAuthor = authorRepositoryJpa.getAuthorById(authorId);
+        Author actualAuthor = authorRepository.findById(authorId).orElse(new Author());
 
         assertThat(actualAuthor).usingRecursiveComparison().isEqualTo(expectedAuthor);
+    }
+
+    @Test
+    void getAuthorById_ShouldReturnEmptyOptional() {
+        long authorId = Long.MAX_VALUE;
+
+        Optional<Author> actualAuthorOptional = authorRepository.findById(authorId);
+
+        assertThat(actualAuthorOptional).isEmpty();
     }
 }

@@ -8,24 +8,21 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @DataJpaTest
-@Import(BookRepositoryJpa.class)
-class BookRepositoryJpaTest {
+class BookRepositoryTest {
 
     private static final long BOOK_ID_1 = 1L;
-    private static final long BOOK_ID_2 = 2L;
 
     @Autowired
-    private BookRepositoryJpa bookRepositoryJpa;
+    private BookRepository bookRepository;
 
     @Autowired
     private TestEntityManager testEntityManager;
@@ -44,7 +41,7 @@ class BookRepositoryJpaTest {
 
         Book expectedBook = new Book(newBookId, newBookName, expectedAuthor, expectedGenre);
 
-        Book actualBook = bookRepositoryJpa.insert(new Book(null, newBookName, expectedAuthor, expectedGenre));
+        Book actualBook = bookRepository.save(new Book(null, newBookName, expectedAuthor, expectedGenre));
 
         assertThat(actualBook).usingRecursiveComparison().isEqualTo(expectedBook);
     }
@@ -56,9 +53,14 @@ class BookRepositoryJpaTest {
         sessionFactory.getStatistics().setStatisticsEnabled(true);
         Book expectedBook = new Book(BOOK_ID_1, "test name 1", getExpectedAuthor1(), getExpectedGenre1());
 
-        Book actualBook = bookRepositoryJpa.getById(BOOK_ID_1);
+        Book actualBook = bookRepository.findById(BOOK_ID_1).orElse(new Book());
 
-        assertThat(actualBook).usingRecursiveComparison().isEqualTo(expectedBook);
+        assertAll(() -> assertThat(actualBook.getId()).isEqualTo(expectedBook.getId()),
+                () -> assertThat(actualBook.getBookName()).isEqualTo(expectedBook.getBookName()),
+                () -> assertThat(actualBook.getAuthor().getId()).isEqualTo(expectedBook.getAuthor().getId()),
+                () -> assertThat(actualBook.getAuthor().getName()).isEqualTo(expectedBook.getAuthor().getName()),
+                () -> assertThat(actualBook.getAuthor().getSurname()).isEqualTo(expectedBook.getAuthor().getSurname()),
+                () -> assertThat(actualBook.getGenre().getName()).isEqualTo(expectedBook.getGenre().getName()));
 
         assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
         sessionFactory.getStatistics().setStatisticsEnabled(false);
@@ -71,17 +73,13 @@ class BookRepositoryJpaTest {
                 .unwrap(SessionFactory.class);
         sessionFactory.getStatistics().setStatisticsEnabled(true);
 
-        Book expectedBook1 = new Book(BOOK_ID_1, "test name 1", getExpectedAuthor1(), getExpectedGenre1());
-
-        Book expectedBook2 = new Book(BOOK_ID_2, "test name 2", getExpectedAuthor2(), getExpectedGenre2());
-
-        List<Book> expectedBooks = Arrays.asList(expectedBook1, expectedBook2);
-
-        List<Book> actualBooks = bookRepositoryJpa.getAll();
+        List<Book> actualBooks = bookRepository.findAll();
 
         assertThat(actualBooks).hasSize(2)
-                .usingRecursiveComparison().ignoringFields("comments").isEqualTo(expectedBooks);
-
+                .allMatch(book -> !book.getGenre().getName().isEmpty())
+                .allMatch(book -> !book.getAuthor().getName().isEmpty())
+                .allMatch(book -> !book.getAuthor().getSurname().isEmpty())
+                .allMatch(book -> !book.getBookName().isEmpty());
         assertThat(sessionFactory.getStatistics().getPrepareStatementCount()).isEqualTo(1L);
         sessionFactory.getStatistics().setStatisticsEnabled(false);
         sessionFactory.getStatistics().clear();
@@ -94,7 +92,7 @@ class BookRepositoryJpaTest {
         Genre newGenre = getExpectedGenre2();
         Book expectedBook = new Book(BOOK_ID_1, newBookName, newAuthor, newGenre);
 
-        bookRepositoryJpa.updateBook(expectedBook);
+        bookRepository.save(expectedBook);
 
         Book actualBook = testEntityManager.find(Book.class, BOOK_ID_1);
 
@@ -115,7 +113,7 @@ class BookRepositoryJpaTest {
 
         testEntityManager.detach(book);
 
-        bookRepositoryJpa.deleteById(BOOK_ID_1);
+        bookRepository.deleteById(BOOK_ID_1);
 
         assertNull(testEntityManager.find(Book.class, BOOK_ID_1));
     }

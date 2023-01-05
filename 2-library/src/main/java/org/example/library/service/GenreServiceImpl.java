@@ -6,6 +6,8 @@ import org.example.library.repository.GenreRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+
 @Service
 @RequiredArgsConstructor
 public class GenreServiceImpl implements GenreService {
@@ -16,6 +18,6 @@ public class GenreServiceImpl implements GenreService {
     @Transactional(readOnly = true)
     public Genre getGenreById(long id) {
 
-        return genreRepository.getGenreById(id);
+        return genreRepository.findById(id).orElseThrow(EntityNotFoundException::new);
     }
 }
